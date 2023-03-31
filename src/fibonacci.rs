@@ -64,7 +64,10 @@ impl<F: FieldExt> FiboChip<F> {
         layouter.assign_region(
             || "first row",
             |mut region| {
-                self.config.selector.enable(&mut region, 0);
+                self.config.selector.enable(&mut region, 0)?;
+
+                // let a_cell = region.assign_advice_from_instance(||"1", self.config.instance, 0, self.config.advice[0], 0)?;
+
                 let a_cell = region.assign_advice(
                     || "a",
                     self.config.advice[0],
@@ -118,6 +121,10 @@ impl<F: FieldExt> FiboChip<F> {
             }
         )
     }
+
+    pub fn expose_public(&self, &mut layouter: impl Layouter<F>, &cell: &ACell<F>, row: usize) {
+        layouter.constrain_instance(cell.0.cell(), self.config.instance, row)
+    }
 }
 
 #[derive(Default)]
@@ -141,6 +148,7 @@ impl<F: FieldExt> Circuit<F> for TheCircuit<F> {
         let col_a = meta.advice_column();
         let col_b = meta.advice_column();
         let col_c = meta.advice_column();
+        let instance = meta.instance_column();
         FiboChip::configure(meta, [col_a, col_b, col_c], )
     }
 
@@ -156,6 +164,11 @@ impl<F: FieldExt> Circuit<F> for TheCircuit<F> {
             layouter.namespace(|| "first row"),
             self.a, self.b
         );
+
+        chip.expose_public(layouter.namespace(|| "private a"), &prev_a, 0);
+        chip.expose_public(layouter.namespace(|| "private b"), &prev_b, 1);
+
+
         // We start at 3 because our first three values are specified in the first row
         for _i in 3..10 {
             let (a, b, c) = chip.assign_row(
@@ -167,6 +180,8 @@ impl<F: FieldExt> Circuit<F> for TheCircuit<F> {
             prev_c = c;
         }
 
+        chip.expose_public(layouter.namespace(|| "out"), &prev_c, 2)?;
+
         Ok(())
     }
 }
@@ -175,13 +190,16 @@ fn main() {
 
     let a = Fp::from(1);
     let b = Fp::from(1);
+    let out = Fp::from(55);
 
     let circuit = TheCircuit {
         a: Some(a),
         b: Some(b),
     };
 
+    let public_input = vec![a, b, out];
+
     // Generate a mock prover and pass in k, a circuit instance, and a vector of instance (public) values (empty)
-    let prover = MockProver::run(k, &circuit, vec![]).unwrap();
+    let prover = MockProver::run(k, &circuit, vec![public_input.clone()]).unwrap();
     prover.assert_satisfied();
 }

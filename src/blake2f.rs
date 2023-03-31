@@ -1,4 +1,5 @@
 // implementation of blake2 hashing algorithm with halo2
+// this is a basic implementation with no optional features such as salting, personalized hashes, or tree hashing
 
 // BLAKE2 Sigma constant
 pub const BLAKE2B_SIGMA: [[u8; 16]; 12] = [
@@ -13,15 +14,4 @@ pub const BLAKE2B_SIGMA: [[u8; 16]; 12] = [
     [6, 15, 14, 9, 11, 3, 0, 8, 12, 2, 13, 7, 1, 4, 10, 5],
     [10, 2, 8, 4, 7, 6, 1, 5, 15, 11, 9, 14, 3, 12, 13, 0],];
 
-// BLAKE2 G function
-fn g_function(v: &mut [u64; 16], m: &[u64; 16], r: usize, i: usize, j: usize, k: usize, l: usize) {
-    v[j] = v[j].wrapping_add(v[k]).wrapping_add(m[BLAKE2B_SIGMA[r][2 * i]]);
-    v[l] = (v[l] ^ v[j]).rotate_right(32);
-    v[i] = v[i].wrapping_add(v[l]);
-    v[k] = (v[k] ^ v[i]).rotate_right(24);
-    v[j] = v[j].wrapping_add(v[k]).wrapping_add(m[BLAKE2B_SIGMA[r][2 * i + 1]]);
-    v[l] = (v[l] ^ v[j]).rotate_right(16);
-    v[i] = v[i].wrapping_add(v[l]);
-    v[k] = (v[k] ^ v[i]).rotate_right(63);
-}
 
