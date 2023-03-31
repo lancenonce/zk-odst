@@ -27,6 +27,8 @@ pub struct MessageChunk(u64);
 // This type should be a u64 field element
 pub struct StateChunk(u64);
 
+const DIGEST_SIZE: usize = 8;
+
 pub trait UpperSigmaVar<
     const A_LEN: usize,
     const B_LEN: usize,
