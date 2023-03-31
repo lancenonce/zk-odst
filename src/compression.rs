@@ -66,17 +66,18 @@ impl State {
             h: None,
         }
     }
+}
 
-    pub struct CompressionGate<F: Field>(PhantomData<F>);
+pub struct CompressionGate<F: Field>(PhantomData<F>);
 
-    impl<F: PrimeField> CompressionGate<F> {
-        fn ones() -> Expression<F> {
-            Expression::Constant(F::ONE)
-        }
+impl<F: PrimeField> CompressionGate<F> {
+    fn ones() -> Expression<F> {
+        Expression::Constant(F::ONE)
+    }
 
-        // Implement G function
-        pub fn g_func(Vec<StateChunk>>, a: Value<F>, b: Value<F>, c: Value<F>, d: Value<F>, x: MessageChunk, y: MessageChunk) -> Vec<StateChunk>> {
+    // Implement G function
+    pub fn g_func(Vec<StateChunk>>, a: Value<F>, b: Value<F>, c: Value<F>, d: Value<F>, x: MessageChunk, y: MessageChunk) -> Vec<StateChunk>> {
 
-        }
     }
 }
+
