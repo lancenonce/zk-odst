@@ -10,6 +10,12 @@ use halo2_proofs::{
     plonk::{Advice, Any, Column, ConstraintSystem, Error},
 };
 
+mod compression;
+
+// we use 12 rounds for BLAKE2
+const ROUNDS: usize = 12;
+const STATE: usize = 8;
+
 #[derive(Clone, Debug)]
 pub struct Blake2fTable {
     id: Column<Advice>,
@@ -42,8 +48,15 @@ impl<F: FieldExt> Blake2fConfig<F> {
         Self {
             table,
             _marker: PhantomData,
-        }
+        };
+
+        meta.create_gate("G function", |meta| {
+            // we query cells here to get the parameters of the G function
+            CompressionGate::g_func()
+        });
+
     }
+
 }
 
 #[derive(Clone, Debug, Default)]
@@ -68,6 +81,49 @@ impl<F: FieldExt> Blake2fChip<F> {
 
     pub fn load(&self, layouter: &mut impl Layouter<F>) -> Result<(), Error> {
         Ok(())
+    }
+}
+
+// here we add the implementation of the BLAKE2 instructions for the BLAKE2 Chip
+impl Blake2fInstructions<F> for Blake2fChip {
+    type State = State;
+    type BlockWord = BlockWord;
+    
+    // Used during the first round when we initialize the block with IV
+    fn initialization_vector(
+        &self,
+        layouter: &mut impl Layouter<pallas::Base>,
+    ) -> Result<State, Error> {
+        // replace Ok(State) with call from compression.rs
+        Ok(State)
+    }
+
+    // Since the compression algorithm has multiple rounds, we can initialize a table with a previous state
+    fn initialization(
+        &self,
+        layouter: &mut impl Layouter,
+        init_state: &Self::State,
+    ) -> Result<State, Error>{
+        Ok(State)
+    }
+
+    // Given an initialized state and an input message block, compress the
+    // message block and return the final state.
+    fn compress(
+        &self,
+        layouter: &mut impl Layouter<pallas::Base>,
+        initialized_state: &Self::State,
+        input: [Self::BlockWord; super::BLOCK_SIZE],
+    ) -> Result<Self::State, Error> {
+        Ok(State)
+    }
+
+    fn digest(
+        &self,
+        layouter: &mut impl Layouter<pallas::Base>,
+        state: &Self::State,
+    ) -> Result<[Self::BlockWord; super::DIGEST_SIZE], Error> {
+        Ok(BlockWord)
     }
 }
 
