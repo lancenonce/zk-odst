@@ -956,4 +956,8 @@ impl<F: PrimeField> CompressionGate<F> {
     pub fn g_func(Vec<StateChunk>>, a: Value<F>, b: Value<F>, c: Value<F>, d: Value<F>, x: MessageChunk, y: MessageChunk) -> Vec<StateChunk>> {
 
     }
+    // Implement G function
+    pub fn f_func(Vec<StateChunk>>, a: Value<F>, b: Value<F>, c: Value<F>, d: Value<F>, x: MessageChunk, y: MessageChunk) -> Vec<StateChunk>> {
+
+    }
 }
