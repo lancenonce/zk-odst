@@ -57,27 +57,21 @@ pub struct AbcdVar {
 
 impl AbcdVar {
     fn a_range() -> Range<usize> {
-        0..2
     }
 
     fn b_range() -> Range<usize> {
-        2..13
     }
 
     fn c_lo_range() -> Range<usize> {
-        13..16
     }
 
-    fn c_mid_range() -> Range<usize> {
         16..19
     }
 
     fn c_hi_range() -> Range<usize> {
-        19..22
     }
 
     fn d_range() -> Range<usize> {
-        22..32
     }
 
     fn pieces(val: u32) -> Vec<Vec<bool>> {
@@ -110,27 +104,21 @@ pub struct EfghVar {
 
 impl EfghVar {
     fn a_lo_range() -> Range<usize> {
-        0..3
     }
 
     fn a_hi_range() -> Range<usize> {
-        3..6
     }
 
     fn b_lo_range() -> Range<usize> {
-        6..8
     }
 
     fn b_hi_range() -> Range<usize> {
-        8..11
     }
 
     fn c_range() -> Range<usize> {
-        11..25
     }
 
     fn d_range() -> Range<usize> {
-        25..32
     }
 
     fn pieces(val: u32) -> Vec<Vec<bool>> {
