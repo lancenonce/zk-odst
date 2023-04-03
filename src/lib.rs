@@ -54,10 +54,6 @@ impl<F: FieldExt> Blake2fConfig<F> {
             // we query cells here to get the parameters of the G function
             CompressionGate::g_func()
         });
-        meta.create_gate("F function", |meta| {
-            // we query cells here to get the parameters of the G function
-            CompressionGate::f_func()
-        });
 
     }
 
@@ -92,7 +88,7 @@ impl<F: FieldExt> Blake2fChip<F> {
 impl Blake2fInstructions<F> for Blake2fChip {
     type State = State;
     type BlockWord = BlockWord;
-
+    
     // Used during the first round when we initialize the block with IV
     fn initialization_vector(
         &self,
