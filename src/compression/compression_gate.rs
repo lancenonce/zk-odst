@@ -1,4 +1,7 @@
-use super::utils::*;
+use halo2_proofs::plonk::Expression;
+
+use super::super::utils::*;
+use super::super::compression::{StateChunk, MessageChunk};
 
 pub struct CompressionGate<F: Field>(PhantomData<F>);
 
@@ -8,7 +11,7 @@ impl<F: PrimeField> CompressionGate<F> {
     }
 
     // Implement G function
-    pub fn g_func(Vec<StateChunk>>, a: Value<F>, b: Value<F>, c: Value<F>, d: Value<F>, x: MessageChunk, y: MessageChunk) -> Vec<StateChunk>> {
+    pub fn g_func(Vec<StateChunk>>, a: Expression<F>, b: Expression<F>, c: Expression<F>, d: Expression<F>, x: MessageChunk, y: MessageChunk) -> Vec<StateChunk>> {
         let w = 64; // Word size
         let r1 = 32;
         let r2 = 24;
