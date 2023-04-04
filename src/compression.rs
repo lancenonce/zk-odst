@@ -7,6 +7,7 @@ use halo2_proofs::{
 
 use group::ff::{Field, PrimeField};
 use std::marker::PhantomData;
+mod compression_gate;
 
 // This is where we will define the message and state chunks that serve as inputs to the compression function
 #[derive(Clone, Debug)]
@@ -68,16 +69,59 @@ impl State {
     }
 }
 
-pub struct CompressionGate<F: Field>(PhantomData<F>);
-
-impl<F: PrimeField> CompressionGate<F> {
-    fn ones() -> Expression<F> {
-        Expression::Constant(F::ONE)
-    }
-
-    // Implement G function
-    pub fn g_func(Vec<StateChunk>>, a: Value<F>, b: Value<F>, c: Value<F>, d: Value<F>, x: MessageChunk, y: MessageChunk) -> Vec<StateChunk>> {
-
-    }
+struct CompressionConfig {
+    lookup: ,
+    //TODO: define advice and selectors
 }
+
+impl CompressionConfig {
+    fn configure(meta: &mut ConstraintSystem<pallas::Base>) -> Self {
+        // define advice and selectors
+        Self {
+            // define advice and selectors
+        }
+    }
+
+    fn blake2_g(
+        v: &mut [Expression<F>; 16],
+        a: usize,
+        b: usize,
+        c: usize,
+        d: usize,
+        x: Expression<F>,
+        y: Expression<F>,
+    ) -> Vec<Expression<F>> {
+        
+
+        meta.create_gate("blake2_g", |meta| {
+            let v = (0..16)
+                .map(|i| meta.query_advice(format!("v_{}", i), Rotation::cur()))
+                .collect::<Vec<_>>()
+                .try_into()
+                .unwrap();
+            let a = meta.query_advice("a", Rotation::cur());
+            let b = meta.query_advice("b", Rotation::cur());
+            let c = meta.query_advice("c", Rotation::cur());
+            let d = meta.query_advice("d", Rotation::cur());
+            let x = meta.query_advice("x", Rotation::cur());
+            let y = meta.query_advice("y", Rotation::cur());
+        
+            CompressionGate::g_func(&mut v, a, b, c, d, x, y);
+        
+            for i in 0..16 {
+                meta.assign_advice(
+                    format!("v_{}_updated", i),
+                    Rotation::cur(),
+                    updated_v[i].into(),
+                );
+            }
+
+        });
+    }
+    
+
+    
+}
+
+
 
