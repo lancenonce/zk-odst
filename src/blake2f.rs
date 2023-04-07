@@ -5,6 +5,7 @@
 #![allow(unreachable_code)]
 
 use std::marker::PhantomData;
+use bitvec::prelude::*;
 
 use halo2_proofs::{
     arithmetic::FieldExt,
@@ -42,6 +43,8 @@ pub const BLAKE2B_IV: [u64; 8] = [
     0x1f83d9abfb41bd6b,
     0x5be0cd19137e2179,
 ];
+
+
 
 #[derive(Clone, Debug)]
 pub struct Blake2fTable {
@@ -111,7 +114,7 @@ impl<F: FieldExt> Blake2fChip<F> {
 impl Blake2fInstructions<F> for Blake2fChip {
     type State = State;
     type BlockWord = BlockWord;
-    
+
     // Used during the first round when we initialize the block with IV
     fn initialization_vector(
         &self,
