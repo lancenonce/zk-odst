@@ -95,7 +95,11 @@ impl CompressionConfig {
         let r1 = lookup.r1;
         let r2 = lookup.r2;
         let r3 = lookup.r3;
-        let r4 = lookup.r4;
+        let r4 = meta.lookup_table_column(r4);
+        meta.lookup(|meta| {
+            let r_4 = meta.query_any(a, Rotation::cur());
+            vec![(r_4, r4)]
+        });
 
         meta.create_gate("blake2_g", |meta| {
             
@@ -111,6 +115,8 @@ impl CompressionConfig {
             let x = meta.query_advice("x", Rotation::cur());
             let y = meta.query_advice("y", Rotation::cur());
             // query selectors for constants
+            // use query table column instead
+            let x = meta.lookup_table_column();
             let r1 = meta.query_selector("r1");
             let r2 = meta.query_selector("r2");
             let r3 = meta.query_selector("r3");
