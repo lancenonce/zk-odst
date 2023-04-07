@@ -11,7 +11,7 @@ impl<F: PrimeField> CompressionGate<F> {
     }
 
     // Implement G function
-    pub fn g_func(Vec<StateChunk>>, a: Expression<F>, b: Expression<F>, c: Expression<F>, d: Expression<F>, x: MessageChunk, y: MessageChunk) -> Vec<StateChunk>> {
+    pub fn g_func(Vec<StateChunk>>, a: Expression<F>, b: Expression<F>, c: Expression<F>, d: Expression<F>, x: MessageChunk, y: MessageChunk, r1: Expression<F>, r2: Expression<F>, r3: Expression<F>, r4: Expression<F>) -> Vec<StateChunk>> {
         let w = 64; // Word size
         let r1 = 32;
         let r2 = 24;
