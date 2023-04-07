@@ -75,14 +75,12 @@ pub struct Blake2fConfig<F> {
 }
 
 impl<F: FieldExt> Blake2fConfig<F> {
-    pub fn configure(meta: &mut ConstraintSystem<F>, table: Blake2fTable) -> Self {
+    pub fn configure(meta: &mut ConstraintSystem<F>, table: Blake2fTable, compression: CompressionConfig) -> Self {
         Self {
             table,
             _marker: PhantomData,
+            compression,
         };
-
-
-
     }
 
 }

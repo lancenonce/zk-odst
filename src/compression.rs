@@ -8,6 +8,7 @@ use halo2_proofs::{
 use group::ff::{Field, PrimeField};
 use std::marker::PhantomData;
 mod compression_gate;
+use compression_gate::CompressionGate;
 
 // This is where we will define the message and state chunks that serve as inputs to the compression function
 #[derive(Clone, Debug)]
@@ -91,9 +92,13 @@ impl CompressionConfig {
         x: Expression<F>,
         y: Expression<F>,
     ) -> Vec<Expression<F>> {
-        
+        let r1 = lookup.r1;
+        let r2 = lookup.r2;
+        let r3 = lookup.r3;
+        let r4 = lookup.r4;
 
         meta.create_gate("blake2_g", |meta| {
+            
             let v = (0..16)
                 .map(|i| meta.query_advice(format!("v_{}", i), Rotation::cur()))
                 .collect::<Vec<_>>()
@@ -105,8 +110,14 @@ impl CompressionConfig {
             let d = meta.query_advice("d", Rotation::cur());
             let x = meta.query_advice("x", Rotation::cur());
             let y = meta.query_advice("y", Rotation::cur());
+            // query selectors for constants
+            let r1 = meta.query_selector("r1");
+            let r2 = meta.query_selector("r2");
+            let r3 = meta.query_selector("r3");
+            let r4 = meta.query_selector("r4");
+
         
-            CompressionGate::g_func(&mut v, a, b, c, d, x, y);
+            CompressionGate::g_func(&mut v, a, b, c, d, x, y, r1, r2, r3, r4));
         
             for i in 0..16 {
                 meta.assign_advice(
@@ -115,12 +126,11 @@ impl CompressionConfig {
                     updated_v[i].into(),
                 );
             }
-
         });
     }
-    
 
-    
+    // compression function should be implemented here
+
 }
 
 
