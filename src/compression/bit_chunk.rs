@@ -399,10 +399,10 @@ impl AssignedBits<7> {
 }
 
 #[derive(Clone, Debug)]
-pub struct BitChunk(AssignedBits<8>, AssignedBits<24>, AssignedBits<23>, AssignedBits<1>, AssignedBits<8>);
+pub struct BitChunk(AssignedBits<8>, AssignedBits<24>, AssignedBits<23>, AssignedBits<1>, AssignedBits<7>);
 
-impl From<(AssignedBits<8>, AssignedBits<24>, AssignedBits<23>, AssignedBits<1>, AssignedBits<8>)> for bitChunk {
-    fn from(portions: (AssignedBits<8>, AssignedBits<24>, AssignedBits<23>, AssignedBits<1>, AssignedBits<8>)) -> Self {
+impl From<(AssignedBits<8>, AssignedBits<24>, AssignedBits<23>, AssignedBits<1>, AssignedBits<7>)> for bitChunk {
+    fn from(portions: (AssignedBits<8>, AssignedBits<24>, AssignedBits<23>, AssignedBits<1>, AssignedBits<7>)) -> Self {
         Self(portions.0, halves.1, portions.2, portions.3, portions.4)
     }
 }
