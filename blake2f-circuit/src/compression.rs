@@ -1,19 +1,26 @@
 use halo2_proofs::{
-    circuit::{Layouter, Value},
-    pasta::pallas,
-    plonk::{Advice, Column, Constraint, Constraints, ConstraintSystem, Error, Expression, Selector},
-    poly::Rotation,
+    circuit::{Layouter},
+    //pasta::pallas,
+    plonk::{Advice, Column, Constraint, Constraints, ConstraintSystem, Error, Expression, Selector, Instance},
+    poly::Rotation, arithmetic::FieldExt,
 };
 
 use group::ff::{Field, PrimeField};
 use std::marker::PhantomData;
+
 mod compression_gate;
 mod bit_chunk;
+
+use pasta_curves::pallas::Base;
+
+const ROUNDS: usize = 12;
+const STATE: usize = 8;
+
 use compression_gate::CompressionGate;
-use bit_chunk::BitChunkSpread;
+//use bit_chunk::BitChunkSpread;
 
 // BLAKE2 Sigma constant
-pub const BLAKE2B_SIGMA: [[u8; 16]; 12] = [
+pub const BLAKE2B_SIGMA: [[u8; 16]; 10] = [
     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
     [14, 10, 4, 8, 9, 15, 13, 6, 1, 12, 0, 2, 11, 7, 5, 3],
     [11, 8, 12, 0, 5, 2, 15, 13, 10, 14, 3, 6, 7, 1, 9, 4],
@@ -26,7 +33,7 @@ pub const BLAKE2B_SIGMA: [[u8; 16]; 12] = [
     [10, 2, 8, 4, 7, 6, 1, 5, 15, 11, 9, 14, 3, 12, 13, 0],
 ];
 
-pub const BLAKE2B_IV: [u64; 8] = [
+pub const BLAKE2B_IV: [u64; STATE] = [
     0x6a09e667f3bcc908,
     0xbb67ae8584caa73b,
     0x3c6ef372fe94f82b,
@@ -44,6 +51,7 @@ pub struct MessageChunk(u64);
 #[derive(Clone, Debug)]
 // This type should be a u64 field element
 pub struct StateChunk(u64);
+
 
 /// The internal state for BLAKE2. Represents the h[0..7] internal state of the hash
 #[derive(Clone, Debug)]
@@ -95,26 +103,63 @@ impl State {
             h: None,
         }
     }
-}
 
-struct CompressionConfig {
-    lookup: ,
-    //TODO: define advice and selectors
-}
-
-impl CompressionConfig {
-    pub(super) fn configure(
-        meta: &mut ConstraintSystem<pallas::Base>,
-        message: [Column<Advice>; 16],
-
-    ) -> Self {
-        // define advice and selectors
-        Self {
-            // define advice and selectors
+    pub fn initial_state() -> Self {
+        State {
+            a: BLAKE2B_IV[0],
+            b: BLAKE2B_IV[1],
+            c: BLAKE2B_IV[2],
+            d: BLAKE2B_IV[3],
+            e: BLAKE2B_IV[4],
+            f: BLAKE2B_IV[5],
+            g: BLAKE2B_IV[6],
+            h: BLAKE2B_IV[7],
         }
     }
+}
 
-    fn blake2_g(
+pub struct CompressionConfig {
+    lookup: PhantomData<()>,
+    //TODO: define advice and selectors
+    advice: [Column<Advice>; 16],
+    s1: Selector,
+    s2: Selector,
+    s3: Selector,
+    s4: Selector,
+}
+
+impl CompressionConfig { pub(super) fn configure(
+    meta: &mut ConstraintSystem<Base>,
+    message: [Column<Advice>; 16],
+) -> Self {
+    // Define advice columns
+    let advice = (0..16)
+        .map(|_| meta.advice_column())
+        .collect::<Vec<_>>()
+        .try_into()
+        .unwrap();
+
+    // Define selectors
+    let s1 = meta.selector();
+    let s2 = meta.selector();
+    let s3 = meta.selector();
+    let s4 = meta.selector();
+
+    // Return the CompressionConfig struct
+    Self {
+        lookup: PhantomData,
+        advice,
+        s1,
+        s2,
+        s3,
+        s4,
+    }
+}
+
+
+    fn blake2_g<F: FieldExt>(
+        &self,
+        meta: &mut ConstraintSystem<Base>,
         v: &mut [Expression<F>; 16],
         a: usize,
         b: usize,
@@ -123,26 +168,36 @@ impl CompressionConfig {
         x: Expression<F>,
         y: Expression<F>,
     ) -> Vec<Expression<F>> {
-        let r1 = meta.lookup_table_column(r1);
+
+        // Look up table columns
+        let r1 = meta.query_any(meta.lookup_table_column(), Rotation::cur());
+        let r2 = meta.query_any(meta.lookup_table_column(), Rotation::cur());
+        let r3 = meta.query_any(meta.lookup_table_column(), Rotation::cur());
+        let r4 = meta.query_any(meta.lookup_table_column(), Rotation::cur());
+
+        /* 
+        //selector column
+        let r1 = meta.lookup_table_column(R1);
         meta.lookup(|meta| {
             let r_1 = meta.query_any(a, Rotation::cur());
             vec![(r_1, r1)]
         });
-        let r2 = meta.lookup_table_column(r2);
+        let r2 = meta.lookup_table_column(R2);
         meta.lookup(|meta| {
             let r_2 = meta.query_any(a, Rotation::cur());
             vec![(r_2, r2)]
         });
-        let r3 = meta.lookup_table_column(r3);
+        let r3 = meta.lookup_table_column(R3);
         meta.lookup(|meta| {
             let r_3 = meta.query_any(a, Rotation::cur());
             vec![(r_3, r3)]
         });
-        let r4 = meta.lookup_table_column(r4);
+        let r4 = meta.lookup_table_column(R4);
         meta.lookup(|meta| {
             let r_4 = meta.query_any(a, Rotation::cur());
             vec![(r_4, r4)]
         });
+        */
 
         meta.create_gate("blake2_g", |meta| {
             
@@ -157,16 +212,16 @@ impl CompressionConfig {
             let d = meta.query_advice("d", Rotation::cur());
             let x = meta.query_advice("x", Rotation::cur());
             let y = meta.query_advice("y", Rotation::cur());
-            // query selectors for constants
+
+            // why query selectors for constants
             // use query table column instead
-            let x = meta.lookup_table_column();
             let r1 = meta.query_selector("r1");
             let r2 = meta.query_selector("r2");
             let r3 = meta.query_selector("r3");
             let r4 = meta.query_selector("r4");
 
         
-            CompressionGate::g_func(&mut v, a, b, c, d, x, y, r1, r2, r3, r4));
+            let updated_v = CompressionGate::g_func(&mut v, a, b, c, d, x, y);
         
             for i in 0..16 {
                 meta.assign_advice(
@@ -178,7 +233,55 @@ impl CompressionConfig {
         });
     }
 
-    // compression function should be implemented here
+    fn compression_function(&self, 
+        layouter: &mut impl Layouter<Base>
+    ) -> Result<(), Error> {
+
+        layouter.assign_region(|| "blake2b compression",
+         |mut region| {
+            let mut v = [Base::zero(); 16];
+            for (idx, iv) in BLAKE2B_IV.iter().enumerate() {
+                v[idx] = Base::from_u64(*iv);
+            }
+    
+            // Assign the initial values of v to the advice cells
+            for (idx, value) in v.iter().enumerate() {
+                region.assign_advice(|| format!("v_{}", idx), self.advice[idx], 0, || Ok(*value))?;
+            }
+    
+            // Iterate through the rounds
+            for round in 0..12 {
+                let sigma = &BLAKE2B_SIGMA[round];
+                self.selector.enable(&mut region, round)?;
+    
+                for idx in 0..8 {
+                    let a = 2 * idx;
+                    let b = 2 * idx + 1;
+                    let c = (2 * idx + 2) % 16;
+                    let d = (2 * idx + 3) % 16;
+    
+                    let x = Base::from_u64(sigma[a] as u64);
+                    let y = Base::from_u64(sigma[b] as u64);
+    
+                    let expressions: [Expression<Base>; 16] = (0..16)
+                        .map(|i| Expression::from(region.get_advice(self.advice[i], round)))
+                        .collect::<Vec<_>>()
+                        .try_into()
+                        .unwrap();
+    
+                    self.blake2_g(&mut region, &mut expressions.clone(), a, b, c, d, Expression::Constant(x), Expression::Constant(y))?;
+    
+                    for (idx, expression) in expressions.iter().enumerate() {
+                        region.assign_advice(|| format!("v_{}", idx), self.advice[idx], round + 1, || {
+                            Ok(expression.evaluate(&|_| { Base::zero() }))
+                        })?;
+                    }
+                }
+            }
+            Ok(())
+        })
+    }
+    
 
 }
 

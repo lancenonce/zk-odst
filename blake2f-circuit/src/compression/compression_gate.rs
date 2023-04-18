@@ -1,20 +1,33 @@
+use std::marker::PhantomData;
+use std::ops::BitXor;
+
+use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::plonk::Expression;
 
-use super::super::utils::*;
+//use super::super::utils::*;
 use super::super::compression::{StateChunk, MessageChunk};
-mod bit_chunk;
-use bit_chunk::BitChunkSpread;
 
-pub struct CompressionGate<F: Field>(PhantomData<F>);
 
-impl<F: PrimeField> CompressionGate<F> {
+//mod bit_chunk;
+
+use crate::compression::bit_chunk::*;
+
+pub struct CompressionGate<F>(PhantomData<F>);
+
+pub trait FieldElement {
+    fn bitxor(&self, other: &Self) -> Self;
+}
+
+impl<F: FieldExt> CompressionGate<F> {
+
     fn ones() -> Expression<F> {
-        Expression::Constant(F::ONE)
+        Expression::Constant(F::one())
     }
 
     // Implement G function
-    pub fn g_func(working_vec: Vec<BitChunkSpread>>, a: Expression<F>, b: Expression<F>, c: Expression<F>, d: Expression<F>, x: MessageChunk, y: MessageChunk, r1: Expression<F>, r2: Expression<F>, r3: Expression<F>, r4: Expression<F>) -> Vec<BitChunkSpread>> {
+    pub fn g_func<BitChunkSpread>(v: [Expression<F>; 16], a: usize, b: usize, c: usize, d: usize, x: Expression<F>, y: Expression<F>) -> Vec<F> {
         let w = 64; // Word size
+        // are r1 constant?
         let r1 = 32;
         let r2 = 24;
         let r3 = 16;
@@ -28,8 +41,12 @@ impl<F: PrimeField> CompressionGate<F> {
         let tmp6 = v[d] ^ tmp5;
         let tmp7 = v[c] + tmp6;
         let tmp8 = v[b] ^ tmp7;
+
+         // TODO: replace rotate_right with >>> operators
+        fn rotate_right(x: u64, n: u32) -> u64 {
+            (x >> n) | (x << (64 - n))
+        }
         
-        // TODO: replace rotate_right with >>> operators
         v[a] = tmp1;
         v[d] = tmp2.rotate_right(r1);
         v[c] = tmp3;
