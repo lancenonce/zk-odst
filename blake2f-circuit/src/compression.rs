@@ -109,6 +109,7 @@ impl State {
 pub struct CompressionConfig {
     lookup: PhantomData<()>,
     //TODO: define advice and selectors
+    // todo what the selectors be used for
     advice: [Column<Advice>; 16],
     s1: Selector,
     s2: Selector,
@@ -128,10 +129,10 @@ impl CompressionConfig { pub(super) fn configure(
         .unwrap();
 
     // Define selectors
-    let s1 = meta.selector();
-    let s2 = meta.selector();
-    let s3 = meta.selector();
-    let s4 = meta.selector();
+    let r1 = meta.selector();
+    let r2 = meta.selector();
+    let r3 = meta.selector();
+    let r4 = meta.selector();
 
     // Return the CompressionConfig struct
     Self {
@@ -159,22 +160,22 @@ impl CompressionConfig { pub(super) fn configure(
 
         // todo are the lookups required for const r1,r2,r3 and r4? i dont think so check?
         //selector column
-        let r1 = meta.lookup_table_column(R1);
+        let r1 = meta.lookup_table_column(r1);
         meta.lookup(|meta| {
             let r_1 = meta.query_any(a, Rotation::cur());
             vec![(r_1, r1)]
         });
-        let r2 = meta.lookup_table_column(R2);
+        let r2 = meta.lookup_table_column(r2);
         meta.lookup(|meta| {
             let r_2 = meta.query_any(a, Rotation::cur());
             vec![(r_2, r2)]
         });
-        let r3 = meta.lookup_table_column(R3);
+        let r3 = meta.lookup_table_column(r3);
         meta.lookup(|meta| {
             let r_3 = meta.query_any(a, Rotation::cur());
             vec![(r_3, r3)]
         });
-        let r4 = meta.lookup_table_column(R4);
+        let r4 = meta.lookup_table_column(r4);
         meta.lookup(|meta| {
             let r_4 = meta.query_any(a, Rotation::cur());
             vec![(r_4, r4)]

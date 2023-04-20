@@ -7,7 +7,7 @@
 use std::marker::PhantomData;
 use bitvec::prelude::*;
 
-use pasta_curves::{pallas::Base};
+use pasta_curves::pallas::Base;
 
 pub struct BlockWord(pub Option<u32>);
 
@@ -98,25 +98,25 @@ pub trait Blake2fInstructions<F: FieldExt> {
 
     fn initialization_vector(
         &self,
-        layouter: &mut impl Layouter<F>,
+        layouter: &mut impl Layouter<Base>,
     ) -> Result<Self::State, Error>;
 
     fn initialization(
         &self,
-        layouter: &mut impl Layouter<F>,
+        layouter: &mut impl Layouter<Base>,
         init_state: &Self::State,
     ) -> Result<Self::State, Error>;
 
     fn compress(
         &self,
-        layouter: &mut impl Layouter<F>,
+        layouter: &mut impl Layouter<Base>,
         initialized_state: &Self::State,
         input: [Self::BlockWord; BLOCK_SIZE],
     ) -> Result<Self::State, Error>;
 
     fn digest(
         &self,
-        layouter: &mut impl Layouter<F>,
+        layouter: &mut impl Layouter<Base>,
         state: &Self::State,
     ) -> Result<[Self::BlockWord; DIGEST_SIZE], Error>;
 }
@@ -130,7 +130,7 @@ impl<F: FieldExt> Blake2fInstructions<F> for Blake2fChip<F> {
     // Used during the first round when we initialize the block with IV
     fn initialization_vector(
         &self,
-        layouter: &mut impl Layouter<F>,
+        layouter: &mut impl Layouter<Base>,
     ) -> Result<State, Error> {
         // replace Ok(State) with call from compression.rs
         let state = State::initial_state();
@@ -140,7 +140,7 @@ impl<F: FieldExt> Blake2fInstructions<F> for Blake2fChip<F> {
     // Since the compression algorithm has multiple rounds, we can initialize a table with a previous state
     fn initialization(
         &self,
-        layouter: &mut impl Layouter<F>,
+        layouter: &mut impl Layouter<Base>,
         init_state: &Self::State,
     ) -> Result<State, Error>{
         // change put just for debugging and running benchmarking
@@ -152,7 +152,7 @@ impl<F: FieldExt> Blake2fInstructions<F> for Blake2fChip<F> {
     // message block and return the final state.
     fn compress(
         &self,
-        layouter: &mut impl Layouter<F>,
+        layouter: &mut impl Layouter<Base>,
         initialized_state: &Self::State,
         input: [Self::BlockWord; BLOCK_SIZE],
     ) -> Result<Self::State, Error> {
@@ -163,7 +163,7 @@ impl<F: FieldExt> Blake2fInstructions<F> for Blake2fChip<F> {
 
     fn digest(
         &self,
-        layouter: &mut impl Layouter<F>,
+        layouter: &mut impl Layouter<Base>,
         state: &Self::State,
     ) -> Result<[Self::BlockWord; DIGEST_SIZE], Error> {
         Ok(BlockWord)
