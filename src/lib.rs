@@ -1,1 +1,1 @@
-pub mod compression;
+pub use blake2f_circuit;

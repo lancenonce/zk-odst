@@ -1,4 +1,9 @@
-use halo2_proofs::circuit::Value;
+//use halo2_proofs::circuit::Value;
+
+pub enum Value<T> {
+    Assigned(T),
+    Unassigned,
+}
 
 pub const MASK_EVEN_32: u32 = 0x55555555;
 

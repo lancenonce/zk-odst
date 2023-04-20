@@ -1,0 +1,13 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "./Cargo.toml",
+        "./blake2f-circuit/Cargo.toml"
+    ],
+    "cSpell.words": [
+        "bitvec",
+        "layouter",
+        "Layouter",
+        "lebs",
+        "lebsp"
+    ]
+}

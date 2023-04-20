@@ -1,1 +1,6 @@
 /target
+/Cargo.lock
+/blake2f-circuit/Cargo.lock
+/blake2f-circuit/target
+/benchmarking/Cargo.lock
+/benchmarking/target

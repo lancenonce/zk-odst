@@ -7,17 +7,25 @@
 use std::marker::PhantomData;
 use bitvec::prelude::*;
 
+use pasta_curves::pallas::Base;
+
+pub struct BlockWord(pub Option<u32>);
+
 use halo2_proofs::{
     arithmetic::FieldExt,
-    circuit::Layouter,
-    plonk::{Advice, Any, Column, ConstraintSystem, Error},
+    circuit::{Layouter, Chip},
+    plonk::{Advice, Any, Column, ConstraintSystem, Error}, 
 };
-mod compression_gate;
-mod compression;
+
+
+use crate::compression::*;
+
 
 // we use 12 rounds for BLAKE2
 const ROUNDS: usize = 12;
-const STATE: usize = 8;
+//const STATE: usize = 8;
+const BLOCK_SIZE: usize = 16; //check?
+const DIGEST_SIZE: usize = 8; //check?
 
 
 
@@ -70,7 +78,7 @@ pub struct Blake2fWitness {
 }
 
 #[derive(Clone, Debug)]
-pub struct Blake2fChip<F> {
+pub struct Blake2fChip<F: FieldExt> {
     config: Blake2fConfig<F>,
     data: Vec<Blake2fWitness>,
 }
@@ -84,46 +92,80 @@ impl<F: FieldExt> Blake2fChip<F> {
         Ok(())
     }
 }
+pub trait Blake2fInstructions<F: FieldExt> {
+    type State;
+    type BlockWord;
+
+    fn initialization_vector(
+        &self,
+        layouter: &mut impl Layouter<Base>,
+    ) -> Result<Self::State, Error>;
+
+    fn initialization(
+        &self,
+        layouter: &mut impl Layouter<Base>,
+        init_state: &Self::State,
+    ) -> Result<Self::State, Error>;
+
+    fn compress(
+        &self,
+        layouter: &mut impl Layouter<Base>,
+        initialized_state: &Self::State,
+        input: [Self::BlockWord; BLOCK_SIZE],
+    ) -> Result<Self::State, Error>;
+
+    fn digest(
+        &self,
+        layouter: &mut impl Layouter<Base>,
+        state: &Self::State,
+    ) -> Result<[Self::BlockWord; DIGEST_SIZE], Error>;
+}
+
 
 // here we add the implementation of the BLAKE2 instructions for the BLAKE2 Chip
-impl Blake2fInstructions<F> for Blake2fChip {
+impl<F: FieldExt> Blake2fInstructions<F> for Blake2fChip<F> {
     type State = State;
     type BlockWord = BlockWord;
 
     // Used during the first round when we initialize the block with IV
     fn initialization_vector(
         &self,
-        layouter: &mut impl Layouter<pallas::Base>,
+        layouter: &mut impl Layouter<Base>,
     ) -> Result<State, Error> {
         // replace Ok(State) with call from compression.rs
-        Ok(State)
+        let state = State::initial_state();
+        Ok(state)
     }
 
     // Since the compression algorithm has multiple rounds, we can initialize a table with a previous state
     fn initialization(
         &self,
-        layouter: &mut impl Layouter,
+        layouter: &mut impl Layouter<Base>,
         init_state: &Self::State,
     ) -> Result<State, Error>{
-        Ok(State)
+        // change put just for debugging and running benchmarking
+        let state = State::initial_state(); 
+        Ok(state)
     }
 
     // Given an initialized state and an input message block, compress the
     // message block and return the final state.
     fn compress(
         &self,
-        layouter: &mut impl Layouter<pallas::Base>,
+        layouter: &mut impl Layouter<Base>,
         initialized_state: &Self::State,
-        input: [Self::BlockWord; super::BLOCK_SIZE],
+        input: [Self::BlockWord; BLOCK_SIZE],
     ) -> Result<Self::State, Error> {
-        Ok(State)
+        // change put just for debugging and running benchmarking
+        let state = State::initial_state();
+        Ok(state)
     }
 
     fn digest(
         &self,
-        layouter: &mut impl Layouter<pallas::Base>,
+        layouter: &mut impl Layouter<Base>,
         state: &Self::State,
-    ) -> Result<[Self::BlockWord; super::DIGEST_SIZE], Error> {
+    ) -> Result<[Self::BlockWord; DIGEST_SIZE], Error> {
         Ok(BlockWord)
     }
 }
@@ -229,7 +271,7 @@ mod tests {
     use halo2_proofs::{dev::MockProver, halo2curves::bn256::Fr};
     use std::marker::PhantomData;
 
-    use crate::dev::{Blake2fTestCircuit, INPUTS_OUTPUTS};
+    use super::dev::{Blake2fTestCircuit, INPUTS_OUTPUTS};
 
     #[test]
     fn test_blake2f_circuit() {

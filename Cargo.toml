@@ -3,12 +3,11 @@ name = "zk-odst"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[[bin]]
-name = "blake2f"
-path = "./src/blake2f"
+[workspace]
+members = [
+    "benchmarking",
+    "blake2f-circuit",
+]
 
 [dependencies]
-halo2_proofs = "0.1.0"
-group = "0.13"
+blake2f-circuit = { version = "^0.1.0", path = "./blake2f-circuit" }

@@ -1,0 +1,19 @@
+[package]
+name = "blake2f-circuit"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+
+[dependencies]
+ethers-core = "^1.0.0"
+halo2_proofs = { git = "https://github.com/halo2-ce/halo2.git" }
+lazy_static = "1.4.0"
+group = "0.13"
+pasta_curves = "0.4.1"
+bitvec = "1"
+
+[features]
+default = ["test"]
+test = []
