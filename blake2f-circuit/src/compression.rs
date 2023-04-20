@@ -17,7 +17,7 @@ const ROUNDS: usize = 12;
 const STATE: usize = 8;
 
 use compression_gate::CompressionGate;
-//use bit_chunk::BitChunkSpread;
+use bit_chunk::BitChunkSpread;
 
 // BLAKE2 Sigma constant
 pub const BLAKE2B_SIGMA: [[u8; 16]; 10] = [
@@ -104,18 +104,6 @@ impl State {
         }
     }
 
-    pub fn initial_state() -> Self {
-        State {
-            a: BLAKE2B_IV[0],
-            b: BLAKE2B_IV[1],
-            c: BLAKE2B_IV[2],
-            d: BLAKE2B_IV[3],
-            e: BLAKE2B_IV[4],
-            f: BLAKE2B_IV[5],
-            g: BLAKE2B_IV[6],
-            h: BLAKE2B_IV[7],
-        }
-    }
 }
 
 pub struct CompressionConfig {
@@ -169,13 +157,7 @@ impl CompressionConfig { pub(super) fn configure(
         y: Expression<F>,
     ) -> Vec<Expression<F>> {
 
-        // Look up table columns
-        let r1 = meta.query_any(meta.lookup_table_column(), Rotation::cur());
-        let r2 = meta.query_any(meta.lookup_table_column(), Rotation::cur());
-        let r3 = meta.query_any(meta.lookup_table_column(), Rotation::cur());
-        let r4 = meta.query_any(meta.lookup_table_column(), Rotation::cur());
-
-        /* 
+        // todo are the lookups required for const r1,r2,r3 and r4? i dont think so check?
         //selector column
         let r1 = meta.lookup_table_column(R1);
         meta.lookup(|meta| {
@@ -197,7 +179,6 @@ impl CompressionConfig { pub(super) fn configure(
             let r_4 = meta.query_any(a, Rotation::cur());
             vec![(r_4, r4)]
         });
-        */
 
         meta.create_gate("blake2_g", |meta| {
             
@@ -233,6 +214,7 @@ impl CompressionConfig { pub(super) fn configure(
         });
     }
 
+    // todo written by chatgpt - check if this makes sense
     fn compression_function(&self, 
         layouter: &mut impl Layouter<Base>
     ) -> Result<(), Error> {

@@ -355,6 +355,7 @@ pub trait BitChunkSpread {
         Self: Sized;
 }
 
+// written by chatgpt - todo check 
 impl BitChunkSpread for BitChunk {
     fn chunk_mask(&self, chunk_size: usize) -> u64 {
         assert!(chunk_size > 0 && chunk_size <= 64);
