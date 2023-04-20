@@ -355,7 +355,8 @@ pub trait BitChunkSpread {
         Self: Sized;
 }
 
-// written by chatgpt - todo check 
+// written by chatgpt - todo check
+// Hendren - This looks roughly right, Im still new to rust but logically it seems to be fine
 impl BitChunkSpread for BitChunk {
     fn chunk_mask(&self, chunk_size: usize) -> u64 {
         assert!(chunk_size > 0 && chunk_size <= 64);
@@ -398,8 +399,3 @@ impl BitChunkSpread for BitChunk {
         Self::new(value, shift)
     }
 }
-
-
-
-
-

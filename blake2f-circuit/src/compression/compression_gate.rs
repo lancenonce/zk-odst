@@ -32,7 +32,7 @@ impl<F: FieldExt> CompressionGate<F> {
         let r2 = 24;
         let r3 = 16;
         let r4 = 64;
-    
+
         let tmp1 = v[a] + v[b] + x;
         let tmp2 = v[d] ^ tmp1;
         let tmp3 = v[c] + tmp2;
@@ -43,10 +43,11 @@ impl<F: FieldExt> CompressionGate<F> {
         let tmp8 = v[b] ^ tmp7;
 
          // TODO: replace rotate_right with >>> operators
+         // I dont believe that operator is in rust? I could be wrong, also we may want to deprioritize this if this is for optimization
         fn rotate_right(x: u64, n: u32) -> u64 {
             (x >> n) | (x << (64 - n))
         }
-        
+
         v[a] = tmp1;
         v[d] = tmp2.rotate_right(r1);
         v[c] = tmp3;
@@ -55,7 +56,7 @@ impl<F: FieldExt> CompressionGate<F> {
         v[d] = tmp6.rotate_right(r3);
         v[c] = tmp7;
         v[b] = tmp8.rotate_right(r4);
-    
+
         v.iter().cloned().collect()
 
     }
