@@ -98,7 +98,8 @@ impl State {
 }
 
 struct CompressionConfig {
-    lookup: ,
+    lookup: SpreadInputs,
+    input: Column<Advice>,
     //TODO: define advice and selectors
 }
 
@@ -113,7 +114,7 @@ impl CompressionConfig {
             // define advice and selectors
         }
     }
-
+    
     fn blake2_g(
         v: &mut [Expression<F>; 16],
         a: usize,
